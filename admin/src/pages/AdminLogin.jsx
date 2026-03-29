@@ -27,7 +27,7 @@ export const AdminLogin = () => {
       }
 
       localStorage.setItem('adminToken', data.token);
-      navigate('/admin/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {

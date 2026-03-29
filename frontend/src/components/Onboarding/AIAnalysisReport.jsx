@@ -213,13 +213,6 @@ export const AIAnalysisReport = ({ formData, onImprove, onStartTest }) => {
 
         {/* Footer Button */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 pb-8">
-           <button 
-            onClick={onStartTest}
-            className="px-10 py-5 bg-gray-900 text-white text-lg font-bold rounded-2xl shadow-xl hover:-translate-y-1 hover:shadow-gray-900/50 transition-all flex items-center justify-center gap-3 w-full sm:w-auto"
-          >
-            Start Assessment <RiArrowRightUpLine size={24} />
-          </button>
-          
           <button 
             onClick={onImprove}
             className="px-8 py-5 bg-white border border-gray-200 text-gray-800 text-lg font-bold rounded-2xl shadow-sm hover:bg-gray-50 flex items-center justify-center w-full sm:w-auto transition-colors"

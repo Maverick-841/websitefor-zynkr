@@ -5,6 +5,7 @@ import { AIAnalysisReport } from './AIAnalysisReport';
 import { HiringTestFlow } from './HiringTestFlow';
 import { ProgressBar } from './ProgressBar';
 import { ProfileUpload } from './ProfileUpload';
+import GitHubIntegration from '../GitHubIntegration';
 import {
   RiBriefcaseLine,
   RiGraduationCapLine,
@@ -13,7 +14,8 @@ import {
   RiArrowRightLine,
   RiCheckDoubleFill,
   RiLoader4Line,
-  RiErrorWarningFill
+  RiErrorWarningFill,
+  RiUpload2Line
 } from '@remixicon/react';
 
 const SKILLS_OPTIONS = [
@@ -27,8 +29,8 @@ const GEN_OPTIONS = ["Male", "Female", "Other"];
 export const OnboardingFlow = ({ onComplete, isEditMode }) => {
   const [formData, setFormData] = useState(() => {
     const defaults = {
-      fullName: '', phone: '', email: '', gender: '', dob: '', experienceLevel: '',
-      roles: [], skills: [], languages: [], githubUrl: '', linkedinUrl: '', leetcodeUrl: ''
+      fullName: '', phone: '', email: '', gender: '', dob: '', college: '', experienceLevel: '',
+      roles: [], skills: [], languages: [], githubUrl: '', linkedinUrl: '', leetcodeUrl: '', resumeUrl: ''
     };
     try {
       const stored = localStorage.getItem('userProfile');
@@ -46,10 +48,64 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
   const [showReport, setShowReport] = useState(false);
   const [showTestFlow, setShowTestFlow] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [resumeFile, setResumeFile] = useState(null);
+  const [resumeFileName, setResumeFileName] = useState('');
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [resumeError, setResumeError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type - PDF only
+    const allowedTypes = ['application/pdf'];
+    const allowedExtensions = ['.pdf'];
+    const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+
+    if (!allowedTypes.includes(file.type) || !allowedExtensions.includes(fileExtension)) {
+      setResumeError('Only PDF format is allowed for resume upload');
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setResumeError('File size exceeds 2MB limit');
+      return;
+    }
+
+    setResumeError('');
+    setIsUploadingResume(true);
+    setResumeFile(file);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('resume', file);
+
+      const response = await fetch('http://localhost:5000/api/profile/upload-resume', {
+        method: 'POST',
+        body: formDataToSend,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Upload failed');
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({ ...prev, resumeUrl: data.resumeUrl }));
+      setResumeFileName(file.name);
+      setIsUploadingResume(false);
+    } catch (err) {
+      console.error('Resume upload error:', err);
+      setResumeError(err.message);
+      setIsUploadingResume(false);
+    }
   };
 
   const completionPercentage = useMemo(() => {
@@ -57,17 +113,22 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
     const coreFields = ['fullName', 'phone', 'email', 'gender', 'dob', 'experienceLevel'];
 
     coreFields.forEach(field => {
-      if (formData[field] && formData[field].trim() !== '') completed += 5;
+      if (formData[field] && formData[field].trim() !== '') completed += 3;
     });
 
-    if (formData.roles && formData.roles.length > 0) completed += 20;
-    if (formData.skills.length > 0) completed += 20;
-    if (formData.languages.length > 0) completed += 15;
+    if (formData.roles && formData.roles.length > 0) completed += 10;
+    if (formData.skills.length > 0) completed += 10;
+    if (formData.languages.length > 0) completed += 10;
 
-    // URLs contribute 5 each up to 15
-    if (formData.githubUrl) completed += 5;
-    if (formData.linkedinUrl) completed += 5;
-    if (formData.leetcodeUrl) completed += 5;
+    // GitHub and LinkedIn are mandatory - 15 each
+    if (formData.githubUrl && formData.githubUrl.includes('github.com')) completed += 13;
+    if (formData.linkedinUrl && formData.linkedinUrl.includes('linkedin.com')) completed += 13;
+    
+    // Resume is mandatory - 20
+    if (formData.resumeUrl) completed += 20;
+    
+    // LeetCode is optional - 6
+    if (formData.leetcodeUrl) completed += 6;
 
     return Math.min(completed, 100);
   }, [formData]);
@@ -103,6 +164,36 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
       return;
     }
 
+    if (!formData.githubUrl || formData.githubUrl.trim() === '') {
+      setErrorMsg("GitHub URL is mandatory. Please provide your GitHub profile link.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (!formData.githubUrl.includes('github.com')) {
+      setErrorMsg("Please enter a valid GitHub URL (e.g., https://github.com/username)");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (!formData.linkedinUrl || formData.linkedinUrl.trim() === '') {
+      setErrorMsg("LinkedIn URL is mandatory. Please provide your LinkedIn profile link.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (!formData.linkedinUrl.includes('linkedin.com')) {
+      setErrorMsg("Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (!formData.resumeUrl || formData.resumeUrl.trim() === '') {
+      setErrorMsg("Resume upload is mandatory. Please upload your resume (PDF/DOC/DOCX).");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     if (isEditMode) {
       setIsSaved(true);
       setTimeout(() => {
@@ -115,12 +206,19 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
     setIsAnalyzing(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/users', {
+      const payload = {
+        ...formData,
+        interestRoles: formData.roles,
+        profileCompletion: completionPercentage
+      };
+
+      const response = await fetch('http://localhost:5000/api/profile/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload),
+        credentials: 'include'
       });
       
       if (!response.ok) {
@@ -232,7 +330,7 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-700">Add Key Skills</p>
-                  <p className="text-xs text-gray-500 mt-0.5">+15% Completion</p>
+                  <p className="text-xs text-gray-500 mt-0.5">+12% Completion</p>
                 </div>
               </li>
               <li className={`flex items-start gap-3 ${formData.experienceLevel ? 'opacity-50' : ''}`}>
@@ -241,16 +339,43 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-700">Set Experience Level</p>
-                  <p className="text-xs text-gray-500 mt-0.5">+10% Completion</p>
+                  <p className="text-xs text-gray-500 mt-0.5">+4% Completion</p>
                 </div>
               </li>
-              <li className={`flex items-start gap-3 ${formData.githubUrl ? 'opacity-50' : ''}`}>
-                <div className={`mt-0.5 p-1 rounded-full ${formData.githubUrl ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-blue-500'}`}>
-                  {formData.githubUrl ? <RiCheckLine size={14} /> : <div className="w-3.5 h-3.5 m-0.5 rounded-full bg-blue-500"></div>}
+              <li className={`flex items-start gap-3 ${formData.githubUrl && formData.githubUrl.includes('github.com') ? 'opacity-50' : ''}`}>
+                <div className={`mt-0.5 p-1 rounded-full ${formData.githubUrl && formData.githubUrl.includes('github.com') ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                  {formData.githubUrl && formData.githubUrl.includes('github.com') ? <RiCheckLine size={14} /> : <div className="w-3.5 h-3.5 m-0.5 rounded-full bg-red-500"></div>}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-700">Add Project Links</p>
-                  <p className="text-xs text-gray-500 mt-0.5">+5% Completion</p>
+                  <p className="text-sm font-semibold text-gray-700">Add GitHub Profile <span className="text-red-500 font-bold">*</span></p>
+                  <p className="text-xs text-gray-500 mt-0.5">+15% Completion (Mandatory)</p>
+                </div>
+              </li>
+              <li className={`flex items-start gap-3 ${formData.linkedinUrl && formData.linkedinUrl.includes('linkedin.com') ? 'opacity-50' : ''}`}>
+                <div className={`mt-0.5 p-1 rounded-full ${formData.linkedinUrl && formData.linkedinUrl.includes('linkedin.com') ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                  {formData.linkedinUrl && formData.linkedinUrl.includes('linkedin.com') ? <RiCheckLine size={14} /> : <div className="w-3.5 h-3.5 m-0.5 rounded-full bg-red-500"></div>}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">Add LinkedIn Profile <span className="text-red-500 font-bold">*</span></p>
+                  <p className="text-xs text-gray-500 mt-0.5">+15% Completion (Mandatory)</p>
+                </div>
+              </li>
+              <li className={`flex items-start gap-3 ${formData.leetcodeUrl ? 'opacity-50' : ''}`}>
+                <div className={`mt-0.5 p-1 rounded-full ${formData.leetcodeUrl ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-blue-500'}`}>
+                  {formData.leetcodeUrl ? <RiCheckLine size={14} /> : <div className="w-3.5 h-3.5 m-0.5 rounded-full bg-blue-500"></div>}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">Add LeetCode (Optional)</p>
+                  <p className="text-xs text-gray-500 mt-0.5">+6% Completion</p>
+                </div>
+              </li>
+              <li className={`flex items-start gap-3 ${formData.resumeUrl ? 'opacity-50' : ''}`}>
+                <div className={`mt-0.5 p-1 rounded-full ${formData.resumeUrl ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                  {formData.resumeUrl ? <RiCheckLine size={14} /> : <div className="w-3.5 h-3.5 m-0.5 rounded-full bg-red-500"></div>}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">Upload Resume <span className="text-red-500 font-bold">*</span></p>
+                  <p className="text-xs text-gray-500 mt-0.5">+20% Completion (Mandatory)</p>
                 </div>
               </li>
             </ul>
@@ -281,6 +406,7 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
                   <TextInput label="Phone Number" type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+1 234 567 890" />
                   <SelectInput label="Gender" name="gender" value={formData.gender} onChange={handleChange} options={GEN_OPTIONS} />
                   <TextInput label="Date of Birth" type="date" name="dob" value={formData.dob} onChange={handleChange} />
+                  <TextInput label="College / University" name="college" value={formData.college} onChange={handleChange} placeholder="E.g., IIT Delhi, Stanford" />
                   <SelectInput label="Experience Level" name="experienceLevel" value={formData.experienceLevel} onChange={handleChange} options={EXP_LEVELS} />
                 </div>
               </div>
@@ -298,10 +424,82 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
               {/* Links Section */}
               <div>
                 <h3 className="text-lg font-bold text-gray-800 border-b pb-2 mb-5">Web Presence</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <TextInput label="GitHub URL" name="githubUrl" value={formData.githubUrl} onChange={handleChange} placeholder="https://github.com/johndoe" />
-                  <TextInput label="LinkedIn URL" name="linkedinUrl" value={formData.linkedinUrl} onChange={handleChange} placeholder="https://linkedin.com/in/johndoe" />
+                
+                {/* GitHub Integration with Analysis */}
+                <div className="mb-6">
+                  <GitHubIntegration 
+                    gitHubUrl={formData.githubUrl}
+                    onGitHubUrlChange={(url) => handleChange({ target: { name: 'githubUrl', value: url } })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                  <div>
+                    <label className="text-sm font-bold text-gray-800 mb-2.5 flex items-center gap-2">
+                      LinkedIn URL
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="url"
+                      name="linkedinUrl"
+                      value={formData.linkedinUrl}
+                      onChange={handleChange}
+                      placeholder="https://linkedin.com/in/johndoe"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
                   <TextInput label="LeetCode URL" name="leetcodeUrl" value={formData.leetcodeUrl} onChange={handleChange} placeholder="https://leetcode.com/johndoe" />
+                  
+                  {/* Resume Upload */}
+                  <div>
+                    <label className="text-sm font-bold text-gray-800 mb-2.5 flex items-center gap-2">
+                      📄 Upload Resume (PDF/DOC/DOCX)
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        onChange={handleResumeUpload}
+                        disabled={isUploadingResume}
+                        className="hidden"
+                        id="resumeInput"
+                      />
+                      <label 
+                        htmlFor="resumeInput"
+                        className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+                          isUploadingResume 
+                            ? 'bg-blue-50 border-blue-300' 
+                            : formData.resumeUrl
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-gray-50 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                        } ${isUploadingResume ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      >
+                        <RiUpload2Line size={20} className={isUploadingResume ? 'text-blue-500 animate-bounce' : formData.resumeUrl ? 'text-green-600' : 'text-gray-500'} />
+                        <div className="text-center">
+                          {isUploadingResume ? (
+                            <p className="text-sm font-semibold text-blue-600">Uploading...</p>
+                          ) : formData.resumeUrl ? (
+                            <div>
+                              <p className="text-sm font-semibold text-green-700">✓ {resumeFileName}</p>
+                              <p className="text-xs text-green-600">Click to replace</p>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-sm font-semibold text-gray-700">📤 Click to upload</p>
+                              <p className="text-xs text-gray-500">PDF, DOC or DOCX (Max 2MB) - Required</p>
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                      {resumeError && (
+                        <p className="text-xs text-red-600 font-medium mt-2 flex items-center gap-1">
+                          <RiErrorWarningFill size={14} /> {resumeError}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 

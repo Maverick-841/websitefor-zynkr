@@ -6,14 +6,21 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   gender: { type: String, required: true },
   dob: { type: String },
+  college: { type: String },
   experienceLevel: { type: String, required: true },
   roles: [{ type: String }],
+  interestRoles: [{ type: String }],
   skills: [{ type: String }],
   languages: [{ type: String }],
-  github: { type: String },
-  linkedin: { type: String },
-  leetcode: { type: String },
-  createdAt: { type: Date, default: Date.now }
+  githubUrl: { type: String },
+  linkedinUrl: { type: String },
+  leetcodeUrl: { type: String },
+  profileImage: { type: String },
+  resume: { type: String },
+  resumeUrl: { type: String },
+  profileCompletion: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);

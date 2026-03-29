@@ -27,8 +27,13 @@ export const navItems = [
 
   {
     id: 5,
-    label: "Contact",
-    href: "#contact",
+    label: "Test",
+    href: "/tests",
+  },
+  {
+    id: 6,
+    label: "Leaderboards",
+    href: "/leaderboard",
   },
 ];
 
@@ -74,38 +79,26 @@ export const benefitItems = [
   {
     id: 1,
     icon: "/images/icon-1.png",
-    title: "Get Internship within 24–72 Hours",
-    text: "Fast-track your career with guaranteed internship opportunities immediately after upskilling.",
+    title: "Fast Matching",
+    text: "Get internship/job matches within 24–72 hours.",
   },
   {
     id: 2,
     icon: "/images/icon-2.png",
-    title: "Real Industry Projects",
-    text: "Work on legitimate projects from real companies instead of artificial or outdated tasks.",
+    title: "Real Company Opportunities",
+    text: "No fake listings — real startups & companies.",
   },
   {
     id: 3,
     icon: "/images/icon-3.png",
-    title: "AI-based Resume & Skill Analysis",
-    text: "Leverage artificial intelligence to pinpoint weaknesses and optimize your profile for ATS.",
+    title: "One-Click Apply",
+    text: "Apply once, we match you automatically.",
   },
   {
     id: 4,
     icon: "/images/icon-4.png",
-    title: "Personalized Career Roadmap",
-    text: "Get a clear, automated path tailored to your specific goals and target salary.",
-  },
-  {
-    id: 5,
-    icon: "/images/icon-5.png",
-    title: "1:1 Mentorship from Professionals",
-    text: "Direct advice and code-reviews from industry veterans currently working in top companies.",
-  },
-  {
-    id: 6,
-    icon: "/images/icon-6.png",
-    title: "Placement Preparation",
-    text: "Comprehensive resume building and mock interview rounds to ensure you ace the real thing.",
+    title: "High Selection Rate",
+    text: "Better chances compared to traditional portals.",
   },
 ];
 
@@ -214,34 +207,43 @@ export const testimonialsItems = [
 export const faqItems = [
   {
     id: 1,
-    title: "Can I enroll in multiple courses at once?",
-    text: "Absolutely! You can enroll in multiple courses simultaneously and access them at your convenience.",
+    title: "How quickly can I get an internship or job?",
+    text: "Most users receive opportunities within 24–72 hours after applying.",
   },
   {
     id: 2,
-    title: "Enrollment Process for Different Courses",
-    text: "Absolutely! You can enroll in multiple courses simultaneously and access them at your convenience.",
+    title: "Are these real companies?",
+    text: "Yes, we only partner with verified startups and companies.",
   },
   {
     id: 3,
-    title: "What kind of support can I expect from instructors?",
-    text: "Absolutely! You can enroll in multiple courses simultaneously and access them at your convenience.",
+    title: "Do I need prior experience?",
+    text: "No, many opportunities are beginner-friendly and open to freshers.",
   },
   {
     id: 4,
-    title:
-      "Are the courses self-paced or do they have specific start and end dates?",
-    text: "Absolutely! You can enroll in multiple courses simultaneously and access them at your convenience.",
+    title: "How do I apply?",
+    text: "Simply sign up, submit your profile, and we match you automatically.",
   },
   {
     id: 5,
-    title: "Are there any prerequisites for the courses?",
-    text: "Absolutely! You can enroll in multiple courses simultaneously and access them at your convenience.",
+    title: "Is there any fee?",
+    text: "Basic access is free. Premium users may get faster matching and exclusive opportunities.",
   },
   {
     id: 6,
-    title: "Can I download the course materials for offline access?",
-    text: "Absolutely! You can enroll in multiple courses simultaneously and access them at your convenience.",
+    title: "Can I apply for multiple opportunities?",
+    text: "Yes, you can receive multiple matches based on your profile.",
+  },
+  {
+    id: 7,
+    title: "What kind of roles are available?",
+    text: "Internships and entry-level jobs in tech, marketing, design, and more.",
+  },
+  {
+    id: 8,
+    title: "What if I don't get selected?",
+    text: "You'll continue receiving new opportunities until you get placed.",
   },
 ];
 

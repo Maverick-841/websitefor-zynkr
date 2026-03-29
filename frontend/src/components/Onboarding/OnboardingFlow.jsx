@@ -24,20 +24,21 @@ const LANGS_OPTIONS = ["JavaScript", "Python", "Java", "C++", "C#", "Go", "Rust"
 const EXP_LEVELS = ["Fresher", "Beginner", "Intermediate", "Advanced"];
 const GEN_OPTIONS = ["Male", "Female", "Other"];
 
-export const OnboardingFlow = ({ onComplete }) => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
-    gender: '',
-    dob: '',
-    experienceLevel: '',
-    roles: [],
-    skills: [],
-    languages: [],
-    githubUrl: '',
-    linkedinUrl: '',
-    leetcodeUrl: ''
+export const OnboardingFlow = ({ onComplete, isEditMode }) => {
+  const [formData, setFormData] = useState(() => {
+    const defaults = {
+      fullName: '', phone: '', email: '', gender: '', dob: '', experienceLevel: '',
+      roles: [], skills: [], languages: [], githubUrl: '', linkedinUrl: '', leetcodeUrl: ''
+    };
+    try {
+      const stored = localStorage.getItem('userProfile');
+      if (stored) {
+        return { ...defaults, ...JSON.parse(stored) };
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return defaults;
   });
 
   const [isSaved, setIsSaved] = useState(false);
@@ -71,7 +72,7 @@ export const OnboardingFlow = ({ onComplete }) => {
     return Math.min(completed, 100);
   }, [formData]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
 
@@ -102,12 +103,45 @@ export const OnboardingFlow = ({ onComplete }) => {
       return;
     }
 
+    if (isEditMode) {
+      setIsSaved(true);
+      setTimeout(() => {
+        setIsSaved(false);
+        if (onComplete) onComplete(formData);
+      }, 1000);
+      return;
+    }
+
     setIsAnalyzing(true);
     
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5000/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save user profile');
+      }
+
+      // Save locally as well for other components
+      localStorage.setItem('userProfile', JSON.stringify(formData));
+
+      // Simulate a little delay for the "AI Analyzing" effect
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setShowReport(true);
+      }, 2000);
+
+    } catch (err) {
+      console.error('Error saving profile:', err);
       setIsAnalyzing(false);
-      setShowReport(true);
-    }, 5000);
+      setErrorMsg("Failed to save profile to the server. Please try again.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   if (showTestFlow) {
@@ -227,7 +261,7 @@ export const OnboardingFlow = ({ onComplete }) => {
         <section className="lg:w-2/3 w-full">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10 mb-8">
             <div className="mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Build your ZYNKAR Profile</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{isEditMode ? "Edit your ZYNKAR Profile" : "Build your ZYNKAR Profile"}</h1>
               <p className="text-gray-500 text-sm sm:text-base">Complete your profile to land your dream role.</p>
             </div>
 
@@ -298,8 +332,8 @@ export const OnboardingFlow = ({ onComplete }) => {
                     </>
                   ) : (
                     <>
-                      Save & Continue
-                      <RiArrowRightLine size={18} />
+                      {isEditMode ? "Save Profile" : "Save & Continue"}
+                      {!isEditMode && <RiArrowRightLine size={18} />}
                     </>
                   )}
                 </button>

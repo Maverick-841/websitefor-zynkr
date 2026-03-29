@@ -18,21 +18,17 @@ import {
 
 const AboutUs = () => {
   const features = [
-    { icon: RiTimerFlashLine, title: "Internships in 24–48 Hours", text: "Skip the waiting game and get matched instantly.", highlight: true },
-    { icon: RiBrainLine, title: "AI-Based Skill Analysis", text: "We analyze your GitHub, resume, and projects automatically.", highlight: false },
-    { icon: RiLineChartLine, title: "Personalized Suggestions", text: "Get actionable advice to improve your profile.", highlight: false },
-    { icon: RiBriefcase4Line, title: "Real-world Projects", text: "Gain hands-on experience that actually matters.", highlight: false },
-    { icon: RiFilePaper2Line, title: "Resume & ATS Optimization", text: "Build a resume that guarantees you get noticed.", highlight: false },
-    { icon: RiChatVoiceLine, title: "Mock Interviews", text: "Practice HR and technical rounds with industry experts.", highlight: false },
-    { icon: RiAwardLine, title: "Industry Skills", text: "Learn exactly what top companies are actively hiring for.", highlight: false },
+    { icon: RiTimerFlashLine, title: "Fast Matching", text: "Get internship/job matches within 24–72 hours.", highlight: true },
+    { icon: RiBriefcase4Line, title: "Real Company Opportunities", text: "No fake listings — real startups & companies.", highlight: false },
+    { icon: RiRocketLine, title: "One-Click Apply", text: "Apply once, we match you automatically.", highlight: false },
+    { icon: RiLineChartLine, title: "High Selection Rate", text: "Better chances compared to traditional portals.", highlight: false },
   ];
 
   const steps = [
-    { num: "01", icon: RiUserAddLine, title: "Sign Up & Upload", text: "Create an account and upload your resume or link your GitHub profile." },
-    { num: "02", icon: RiRobot2Line, title: "AI Analysis", text: "Our advanced AI instantly analyzes your skills and past projects." },
-    { num: "03", icon: RiLightbulbFlashLine, title: "Actionable Insights", text: "The platform suggests targeted improvements and highlights missing skills." },
-    { num: "04", icon: RiLinksLine, title: "Smart Matching", text: "Apply directly or get auto-matched with the perfect startup internships." },
-    { num: "05", icon: RiCheckDoubleFill, title: "Get the Opportunity", text: "Secure your internship offer within 24 to 48 hours." },
+    { num: "01", icon: RiUserAddLine, title: "Sign Up", text: "Create your account in minutes" },
+    { num: "02", icon: RiFilePaper2Line, title: "Submit Profile", text: "Upload basic details or resume" },
+    { num: "03", icon: RiLinksLine, title: "Get Matched", text: "We connect you with companies" },
+    { num: "04", icon: RiCheckDoubleFill, title: "Receive Offer", text: "Get internship/job within 24–72 hours" },
   ];
 
   return (
@@ -44,16 +40,16 @@ const AboutUs = () => {
           About Our Platform
         </div>
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-          From Skills to Internship in <br className="hidden sm:block" />
+          Get Internships & Jobs in <br className="hidden sm:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 relative inline-block">
-            24–48 Hours
+            24–72 Hours
             <svg className="absolute w-full h-3 -bottom-1 left-0 text-blue-200 -z-10" viewBox="0 0 100 20" preserveAspectRatio="none">
               <path d="M0 10 Q 50 20 100 10" stroke="currentColor" strokeWidth="8" fill="transparent" />
             </svg>
           </span>
         </h2>
         <p className="text-gray-600 text-lg md:text-xl leading-relaxed mb-12">
-          Our platform is designed to bridge the gap between learning and real-world experience. We help students build practical, job-ready skills and connect them with real internship opportunities quickly.
+          We connect you directly with real companies and opportunities. Apply once and get matched instantly — no long waiting, no unnecessary steps.
         </p>
 
         {/* Mission & Vision Cards */}
@@ -61,12 +57,12 @@ const AboutUs = () => {
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl text-white shadow-xl shadow-blue-600/20 transform hover:-translate-y-1 transition-transform">
             <RiRocketLine className="w-10 h-10 mb-4 text-blue-200" />
             <h3 className="text-2xl font-bold mb-2">Our Mission</h3>
-            <p className="text-blue-100 leading-relaxed text-lg">"To make every student industry-ready and employable"</p>
+            <p className="text-blue-100 leading-relaxed text-lg">"To help students get real internships and jobs quickly without long waiting or complex processes."</p>
           </div>
           <div className="bg-white border-2 border-gray-100 p-8 rounded-3xl shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition-all">
             <RiEyeLine className="w-10 h-10 mb-4 text-blue-600" />
             <h3 className="text-2xl font-bold mb-2 text-gray-900">Our Vision</h3>
-            <p className="text-gray-600 leading-relaxed text-lg">"To become the fastest platform connecting skills with real opportunities"</p>
+            <p className="text-gray-600 leading-relaxed text-lg">"To become the fastest hiring platform for students and freshers."</p>
           </div>
         </div>
       </div>
@@ -116,7 +112,7 @@ const AboutUs = () => {
           {/* Connector Line for larger screens */}
           <div className="hidden lg:block md:hidden absolute top-[40px] left-[10%] right-[10%] h-[2px] bg-gray-800 -z-10"></div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-10 lg:gap-4 relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-4 relative">
             {steps.map((step, i) => {
               const Icon = step.icon;
               return (

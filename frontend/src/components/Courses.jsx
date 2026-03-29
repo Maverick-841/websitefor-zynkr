@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { coursesSecItems } from "../constant/data";
-import { RiTimeLine, RiBarChartGroupedLine } from '@remixicon/react';
+import { RiTimeLine, RiBarChartGroupedLine, RiLockUnlockLine } from '@remixicon/react';
 
 const Courses = () => {
+  const navigate = useNavigate();
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    setIsPremium(localStorage.getItem('isPremium') === 'true');
+  }, []);
+
+  const handleEnroll = (course) => {
+    if (isPremium) {
+      alert(`Unlocking premium course content for:\n${course.title}`);
+      // Typically route to a specific course player /player/:id here
+    } else {
+      navigate('/premium');
+    }
+  };
+
   return (
     <section id="courses" className="container section pb-24 border-t border-gray-100 pt-20">
       <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-16">
@@ -60,8 +77,15 @@ const Courses = () => {
                   {course.text}
                 </p>
                 
-                <button className="w-full bg-blue-50 text-blue-700 font-bold py-3.5 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                  Enroll Now
+                <button 
+                  onClick={() => handleEnroll(course)}
+                  className={`w-full font-bold py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 ${
+                    isPremium
+                    ? 'bg-green-50 text-green-700 group-hover:bg-green-600 group-hover:text-white'
+                    : 'bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white'
+                  }`}
+                >
+                  {isPremium ? <><RiLockUnlockLine size={18} /> Access Content</> : 'Enroll Now'}
                 </button>
               </div>
             </div>

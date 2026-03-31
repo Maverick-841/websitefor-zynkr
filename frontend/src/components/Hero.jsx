@@ -30,8 +30,8 @@ const Hero = ({ onGetStarted }) => {
           <button onClick={onGetStarted} className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:-translate-y-1 hover:shadow-blue-600/40 transition-all flex justify-center items-center gap-2">
             Get Matched Now <RiArrowRightSLine size={20} />
           </button>
-          <a href="#courses" className="px-8 py-4 bg-white text-gray-900 border border-gray-200 font-bold rounded-xl hover:bg-gray-50 transition-colors flex justify-center items-center">
-            View Courses
+          <a href="#about" className="px-8 py-4 bg-white text-gray-900 border border-gray-200 font-bold rounded-xl hover:bg-gray-50 transition-colors flex justify-center items-center">
+            Learn More
           </a>
         </div>
 

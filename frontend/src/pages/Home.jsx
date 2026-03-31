@@ -3,7 +3,6 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import AboutUs from "../components/AboutUs";
 import Benefits from "../components/Benefits";
-import Courses from "../components/Courses";
 import FAQ from "../components/FAQ";
 import Footer from "../components/Footer";
 import { OnboardingFlow } from "../components/Onboarding/OnboardingFlow";
@@ -27,7 +26,7 @@ export const Home = () => {
             window.dispatchEvent(new Event('profileUpdated'));
           }
           setShowOnboarding(false);
-          if (isEdit) navigate('/profile'); // Redirect directly back to profile dashboard
+          navigate('/profile');
         }} 
       />
     );
@@ -39,7 +38,6 @@ export const Home = () => {
       <Hero onGetStarted={() => setShowOnboarding(true)} />
       <AboutUs />
       <Benefits />
-      <Courses />
       <FAQ />
       <Footer />
     </main>

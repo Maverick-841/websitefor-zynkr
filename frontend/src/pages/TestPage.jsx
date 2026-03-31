@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { RiTimerLine, RiArrowLeftLine, RiRefreshLine, RiArrowRightLine, RiTrophyFill, RiPlayCircleLine, RiCheckDoubleLine, RiDownloadCloud2Line } from '@remixicon/react';
+import { RiTimerLine, RiArrowLeftLine, RiRefreshLine, RiArrowRightLine, RiTrophyFill, RiPlayCircleLine, RiCheckDoubleLine, RiDownloadCloud2Line, RiCloseCircleLine } from '@remixicon/react';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
 import { questions as aptitudeQuestions } from '../constant/questions';
@@ -206,12 +206,39 @@ export const TestPage = () => {
     return `${min}:${sec < 10 ? '0' : ''}${sec}`;
   };
 
-  if (testQuestions.length === 0) return null;
+  if (testQuestions.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-10 h-10 mx-auto mb-4 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+          <p className="text-gray-600 font-semibold">Loading questions...</p>
+        </div>
+      </div>
+    );
+  }
 
   const config = getRoundConfig();
   const currentQ = testQuestions[currentIdx];
   const isLast = currentIdx === testQuestions.length - 1;
   const isAllAnswered = Object.keys(selectedAnswers).length === testQuestions.length;
+  const answeredCount = Object.keys(selectedAnswers).length;
+
+  if (!currentQ) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm max-w-md w-full">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Unable to load this question</h2>
+          <p className="text-gray-600 mb-4">Please restart this round.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700"
+          >
+            Reload Test
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isSubmitted) {
     const isPass = score >= config.cutoff;
@@ -292,36 +319,7 @@ export const TestPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 relative">
 
-        {/* Premium Lock Modal */}
-        {showPremiumLock && (
-          <div className="absolute inset-0 z-50 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-8 animate-slide-up border border-indigo-100">
-              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <RiTrophyFill size={40} />
-              </div>
-              <h2 className="text-2xl font-black text-gray-900 mb-2">Unlock Premium</h2>
-              <p className="text-gray-600 font-medium mb-8">
-                Round 2 (DSA) and Round 3 are locked. Upgrade to premium to continue your assessment!
-              </p>
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={() => navigate('/premium?redirect=tests')}
-                  className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-colors"
-                >
-                  View Premium Plans
-                </button>
-                <button
-                  onClick={() => setShowPremiumLock(false)}
-                  className="w-full py-3 text-gray-500 hover:bg-gray-100 font-bold rounded-xl transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className={`max-w-md w-full rounded-3xl p-10 text-center shadow-lg border ${resBorder} ${resBg} relative overflow-hidden ${showPremiumLock ? 'opacity-50 blur-sm pointer-events-none' : ''}`}>
+        <div className={`max-w-md w-full rounded-3xl p-10 text-center shadow-lg border ${resBorder} ${resBg} relative overflow-hidden`}>
           <div className={`absolute top-0 left-0 w-full h-2 ${isPass ? 'bg-gradient-to-r from-green-400 to-blue-500' : 'bg-red-500'}`}></div>
 
           {currentRound === 3 && isPass ? (
@@ -336,7 +334,10 @@ export const TestPage = () => {
             <h2 className={`text-4xl font-black mb-2 ${resColor}`}>{resText}</h2>
           )}
 
-          <p className="text-gray-600 font-medium mb-8">Score: {score}/{testQuestions.length}</p>
+          <p className="text-gray-600 font-medium mb-2">Score: {score}/{testQuestions.length}</p>
+          <p className="text-sm text-gray-500 mb-8">
+            Correct Answers: {score} | Wrong Answers: {testQuestions.length - score} | Accuracy: {Math.round((score / testQuestions.length) * 100)}%
+          </p>
 
           <div className="w-32 h-32 mx-auto rounded-full bg-white shadow-inner flex items-center justify-center mb-6 border-4 border-white">
             <span className="text-5xl font-black text-gray-900">{score}<span className="text-gray-400 text-2xl">/{testQuestions.length}</span></span>
@@ -563,6 +564,7 @@ export const TestPage = () => {
         <div className="w-full max-w-3xl mb-8 flex flex-col items-center text-center">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">{config.title}</h1>
           <p className="text-gray-500 font-medium">{testQuestions.length} Questions • Pass marks: {config.cutoff}</p>
+          <p className="text-sm text-blue-700 font-semibold mt-1">Answered: {answeredCount}/{testQuestions.length}</p>
         </div>
 
         {/* Progress Stepper */}

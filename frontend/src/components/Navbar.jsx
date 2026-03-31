@@ -1,16 +1,13 @@
 import { navItems } from "../constant/data";
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { RiVipCrownFill } from '@remixicon/react';
 import ProfileProgress from './ProfileProgress';
 
 const Navbar = ({ onLoginClick }) => {
-  const [isPremium, setIsPremium] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setIsPremium(localStorage.getItem('isPremium') === 'true');
     const checkLogin = () => setIsLoggedIn(!!localStorage.getItem('userProfile'));
     
     checkLogin();
@@ -36,16 +33,6 @@ const Navbar = ({ onLoginClick }) => {
         ))}
       </div>
       <div className="flex items-center gap-4">
-        {isPremium ? (
-          <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 font-bold rounded-xl border border-yellow-200 shadow-sm cursor-default">
-            Premium User <RiVipCrownFill size={18} className="text-amber-500" />
-          </div>
-        ) : (
-          <button onClick={() => navigate('/premium')} className="hidden sm:block px-6 py-2.5 rounded-xl font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors">
-            Upgrade
-          </button>
-        )}
-        
         {isLoggedIn ? (
           <ProfileProgress />
         ) : (

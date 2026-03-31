@@ -15,11 +15,6 @@ export const navItems = [
     href: "#home",
   },
   {
-    id: 2,
-    label: "Courses",
-    href: "#courses",
-  },
-  {
     id: 3,
     label: "About Us",
     href: "#about",
@@ -102,81 +97,6 @@ export const benefitItems = [
   },
 ];
 
-export const coursesSecItems = [
-  {
-    id: 1,
-    img: "/images/course-img-1.png",
-    title: "Resume Writing & ATS Optimization",
-    text: "Learn how to craft a 1% resume that passes ATS filters and grabs recruiter attention immediately.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "2 Weeks" }, { tag: "Beginner" }],
-  },
-  {
-    id: 2,
-    img: "/images/course-img-2.png",
-    title: "LinkedIn Profile Building & Branding",
-    text: "Optimize your LinkedIn presence to attract inbound opportunities and build a strong professional network.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "2 Weeks" }, { tag: "Beginner" }],
-  },
-  {
-    id: 3,
-    img: "/images/course-img-3.png",
-    title: "Mock Interviews (HR + Technical)",
-    text: "Simulate real interview environments. Get feedback on technical problem solving and behavioral questions.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "4 Weeks" }, { tag: "Intermediate" }],
-  },
-  {
-    id: 4,
-    img: "/images/course-img-4.png",
-    title: "Freelancing & Upwork/Fiverr Setup",
-    text: "Start earning immediately. Learn how to optimize gigs, win clients, and secure your first freelance checks.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "3 Weeks" }, { tag: "Beginner" }],
-  },
-  {
-    id: 5,
-    img: "/images/course-img-5.png",
-    title: "AI Tools for Developers",
-    text: "10x your coding speed using ChatGPT, GitHub Copilot alternatives, Cursor, and automated workflows.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "4 Weeks" }, { tag: "Intermediate" }],
-  },
-  {
-    id: 6,
-    img: "/images/course-img-6.png",
-    title: "Full Stack Development (MERN)",
-    text: "Build production-ready web apps from scratch. Master MongoDB, Express, React, and Node.js.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "8 Weeks" }, { tag: "Advanced" }],
-  },
-  {
-    id: 7,
-    img: "/images/course-img-1.png",
-    title: "UI/UX Design with Figma",
-    text: "Design beautiful, intuitive interfaces. Learn wireframing, prototyping, and modern design systems.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "6 Weeks" }, { tag: "Intermediate" }],
-  },
-  {
-    id: 8,
-    img: "/images/course-img-2.png",
-    title: "Data Analytics & Excel",
-    text: "Analyze real datasets. Master advanced Excel, SQL basics, and data visualization techniques.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "6 Weeks" }, { tag: "Beginner" }],
-  },
-  {
-    id: 9,
-    img: "/images/course-img-3.png",
-    title: "Startup & Entrepreneurship Basics",
-    text: "Launch your own product. Understand market validation, MVPs, finding co-founders, and pitching.",
-    instructor: "By ZYNKAR Mentors",
-    tags: [{ tag: "4 Weeks" }, { tag: "Beginner" }],
-  },
-];
-
 export const testimonialsItems = [
   {
     id: 1,
@@ -228,7 +148,7 @@ export const faqItems = [
   {
     id: 5,
     title: "Is there any fee?",
-    text: "Basic access is free. Premium users may get faster matching and exclusive opportunities.",
+    text: "Basic access is free for all users.",
   },
   {
     id: 6,
@@ -271,7 +191,6 @@ export const footerLists = [
     title: "Home",
     links: [
       { label: "Benefits" },
-      { label: "Our Courses" },
       { label: "Our FAQ" },
     ],
   },
@@ -300,6 +219,6 @@ export const socialIcons = [
   {
     id: 3,
     icon: RiInstagramFill,
-    href: "#",
+    href: "https://www.instagram.com/zynkr_ai/",
   },
 ];

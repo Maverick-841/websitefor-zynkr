@@ -1,32 +1,84 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RiLock2Fill, RiCheckDoubleFill, RiTrophyFill, RiArrowRightLine, RiVipCrownFill, RiSecurePaymentLine, RiCloseLine } from '@remixicon/react';
+import { RiLock2Fill, RiCheckDoubleFill, RiTrophyFill, RiArrowRightLine, RiBarChartBoxLine, RiMedalLine, RiStackLine } from '@remixicon/react';
 
 export const TestDashboard = () => {
   const navigate = useNavigate();
-  
-  const [isPremium, setIsPremium] = useState(false);
+
   const [round1Passed, setRound1Passed] = useState(false);
   const [round2Passed, setRound2Passed] = useState(false);
   const [round3Passed, setRound3Passed] = useState(false);
+  const [scoreStats, setScoreStats] = useState({
+    attempts: 0,
+    totalBestScore: 0,
+    completionPercent: 0,
+    round1Best: 0,
+    round2Best: 0,
+    round3Best: 0,
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    setIsPremium(localStorage.getItem('isPremium') === 'true');
     setRound1Passed(localStorage.getItem('round1Passed') === 'true');
     setRound2Passed(localStorage.getItem('round2Passed') === 'true');
     setRound3Passed(localStorage.getItem('round3Passed') === 'true');
+
+    try {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+      const currentUserName = userProfile.fullName || 'Guest User';
+      const rawLeaderboard = JSON.parse(localStorage.getItem('globalLeaderboard')) || [];
+
+      const myAttempts = rawLeaderboard.filter((row) => row.userName === currentUserName);
+      const bestByRound = {
+        1: 0,
+        2: 0,
+        3: 0,
+      };
+
+      myAttempts.forEach((row) => {
+        if (row.round >= 1 && row.round <= 3) {
+          bestByRound[row.round] = Math.max(bestByRound[row.round], Number(row.score) || 0);
+        }
+      });
+
+      const totalBestScore = bestByRound[1] + bestByRound[2] + bestByRound[3];
+      const completionPercent = Math.round((totalBestScore / 20) * 100);
+
+      setScoreStats({
+        attempts: myAttempts.length,
+        totalBestScore,
+        completionPercent,
+        round1Best: bestByRound[1],
+        round2Best: bestByRound[2],
+        round3Best: bestByRound[3],
+      });
+    } catch (error) {
+      setScoreStats({
+        attempts: 0,
+        totalBestScore: 0,
+        completionPercent: 0,
+        round1Best: 0,
+        round2Best: 0,
+        round3Best: 0,
+      });
+    }
   }, []);
 
   const handleRoundClick = (roundId) => {
     if (roundId === 'round1') {
       navigate('/test/round1');
-    } else {
-      if (!isPremium) {
-        navigate('/premium?redirect=tests');
-      } else {
-        navigate(`/test/${roundId}`);
-      }
+      return;
+    }
+
+    if (roundId === 'round2') {
+      if (!round1Passed) return;
+      navigate('/test/round2');
+      return;
+    }
+
+    if (roundId === 'round3') {
+      if (!round2Passed) return;
+      navigate('/test/round3');
     }
   };
 
@@ -36,13 +88,11 @@ export const TestDashboard = () => {
     }
     if (roundId === 'round2') {
       if (round2Passed) return 'completed';
-      if (isPremium) return 'unlocked';
-      return 'locked_premium';
+      return round1Passed ? 'unlocked' : 'locked';
     }
     if (roundId === 'round3') {
       if (round3Passed) return 'completed';
-      if (isPremium) return 'unlocked';
-      return 'locked_premium';
+      return round2Passed ? 'unlocked' : 'locked';
     }
   };
 
@@ -92,6 +142,22 @@ export const TestDashboard = () => {
     }
   ];
 
+  const getRankLabel = (percent) => {
+    if (percent >= 85) return 'Expert';
+    if (percent >= 65) return 'Advanced';
+    if (percent >= 40) return 'Intermediate';
+    return 'Beginner';
+  };
+
+  const getRankStyles = (rank) => {
+    if (rank === 'Expert') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    if (rank === 'Advanced') return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (rank === 'Intermediate') return 'bg-amber-100 text-amber-800 border-amber-200';
+    return 'bg-gray-100 text-gray-700 border-gray-200';
+  };
+
+  const rankLabel = getRankLabel(scoreStats.completionPercent);
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans">
 
@@ -110,6 +176,55 @@ export const TestDashboard = () => {
       </div>
 
       <main className="flex-1 container mx-auto px-4 sm:px-6 py-12 flex flex-col items-center">
+
+        <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-gray-500 text-sm font-bold mb-2">
+              <RiStackLine size={18} /> Total Best Score
+            </div>
+            <div className="text-3xl font-black text-gray-900">{scoreStats.totalBestScore}<span className="text-lg text-gray-400">/20</span></div>
+            <p className="text-xs text-gray-500 mt-1">Best across all 3 rounds</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-gray-500 text-sm font-bold mb-2">
+              <RiBarChartBoxLine size={18} /> Completion Score
+            </div>
+            <div className="text-3xl font-black text-blue-700">{scoreStats.completionPercent}%</div>
+            <div className="mt-2">
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-md border text-xs font-bold ${getRankStyles(rankLabel)}`}>
+                Rank: {rankLabel}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Overall project test readiness</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-gray-500 text-sm font-bold mb-2">
+              <RiMedalLine size={18} /> Attempts Logged
+            </div>
+            <div className="text-3xl font-black text-emerald-700">{scoreStats.attempts}</div>
+            <p className="text-xs text-gray-500 mt-1">Your completed test submissions</p>
+          </div>
+        </div>
+
+        <div className="w-full max-w-3xl bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm mb-10">
+          <h3 className="text-lg font-black text-gray-900 mb-4">Round-wise Best Scores</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-xl bg-blue-50 border border-blue-100 p-4">
+              <p className="text-xs font-bold text-blue-700 mb-1">Round 1</p>
+              <p className="text-2xl font-black text-blue-900">{scoreStats.round1Best}<span className="text-sm text-blue-500">/10</span></p>
+            </div>
+            <div className="rounded-xl bg-indigo-50 border border-indigo-100 p-4">
+              <p className="text-xs font-bold text-indigo-700 mb-1">Round 2</p>
+              <p className="text-2xl font-black text-indigo-900">{scoreStats.round2Best}<span className="text-sm text-indigo-500">/5</span></p>
+            </div>
+            <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-4">
+              <p className="text-xs font-bold text-emerald-700 mb-1">Round 3</p>
+              <p className="text-2xl font-black text-emerald-900">{scoreStats.round3Best}<span className="text-sm text-emerald-500">/5</span></p>
+            </div>
+          </div>
+        </div>
         
         {/* Progress Timeline UI */}
         <div className="w-full max-w-3xl flex items-center justify-between mb-12 relative px-4 sm:px-12">
@@ -138,7 +253,7 @@ export const TestDashboard = () => {
         {/* Vertical Stack */}
         <div className="w-full max-w-3xl flex items-center flex-col gap-6">
           {roundsData.map((round, idx) => {
-            const isLocked = round.status === 'locked' || round.status === 'locked_premium';
+            const isLocked = round.status === 'locked';
             const isCompleted = round.status === 'completed';
             
             return (
@@ -168,9 +283,6 @@ export const TestDashboard = () => {
 
                 <div className="shrink-0 flex flex-col sm:items-end gap-3 mt-4 sm:mt-0 w-full sm:w-auto">
                   <StatusBadge status={round.status} />
-                  {round.status === 'locked_premium' && (
-                    <span className="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded w-max">Requires Premium ✨</span>
-                  )}
                 </div>
               </div>
             );

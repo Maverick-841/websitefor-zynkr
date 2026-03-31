@@ -43,6 +43,14 @@ export const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (!selectedUser?._id) return;
+    const latestSelected = users.find((u) => u._id === selectedUser._id);
+    if (latestSelected) {
+      setSelectedUser(latestSelected);
+    }
+  }, [users, selectedUser?._id]);
+
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     navigate('/login');
@@ -134,6 +142,7 @@ export const AdminDashboard = () => {
                     <th className="p-5 whitespace-nowrap">SKILLS</th>
                     <th className="p-5 whitespace-nowrap">ROLES</th>
                     <th className="p-5 whitespace-nowrap">JOINED DATE</th>
+                    <th className="p-5 whitespace-nowrap">UPDATED</th>
                     <th className="p-5 whitespace-nowrap">ACTION</th>
                   </tr>
                 </thead>
@@ -180,6 +189,9 @@ export const AdminDashboard = () => {
                       </td>
                       <td className="p-5 text-sm font-medium text-slate-500 whitespace-nowrap">
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                      </td>
+                      <td className="p-5 text-sm font-medium text-slate-500 whitespace-nowrap">
+                        {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                       </td>
                       <td className="p-5">
                         <button 

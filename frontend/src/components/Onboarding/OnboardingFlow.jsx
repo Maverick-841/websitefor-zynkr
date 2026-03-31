@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { TextInput, SelectInput, MultiSelectInput } from './FormInputs';
 import { RoleInterest } from './RoleInterest';
-import { AIAnalysisReport } from './AIAnalysisReport';
 import { HiringTestFlow } from './HiringTestFlow';
 import { ProgressBar } from './ProgressBar';
 import { ProfileUpload } from './ProfileUpload';
 import GitHubIntegration from '../GitHubIntegration';
+import LeetCodeIntegration from '../LeetCodeIntegration';
+import LinkedInIntegration from '../LinkedInIntegration';
+import ResumeIntegration from '../ResumeIntegration';
 import {
   RiBriefcaseLine,
   RiGraduationCapLine,
@@ -14,8 +16,7 @@ import {
   RiArrowRightLine,
   RiCheckDoubleFill,
   RiLoader4Line,
-  RiErrorWarningFill,
-  RiUpload2Line
+  RiErrorWarningFill
 } from '@remixicon/react';
 
 const SKILLS_OPTIONS = [
@@ -45,7 +46,6 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
 
   const [isSaved, setIsSaved] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showReport, setShowReport] = useState(false);
   const [showTestFlow, setShowTestFlow] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [resumeFile, setResumeFile] = useState(null);
@@ -137,6 +137,18 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
     e.preventDefault();
     setErrorMsg("");
 
+    if (isUploadingResume) {
+      setErrorMsg("Resume upload is in progress. Please wait before proceeding.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (resumeError) {
+      setErrorMsg("Please fix the resume upload error before proceeding.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     const requiredFields = ['fullName', 'phone', 'email', 'gender', 'dob', 'experienceLevel'];
     
     // Validate required fields explicitly
@@ -189,21 +201,16 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
     }
 
     if (!formData.resumeUrl || formData.resumeUrl.trim() === '') {
-      setErrorMsg("Resume upload is mandatory. Please upload your resume (PDF/DOC/DOCX).");
+      setErrorMsg("Resume upload is mandatory. Please upload your resume (PDF only).");
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
     if (isEditMode) {
       setIsSaved(true);
-      setTimeout(() => {
-        setIsSaved(false);
-        if (onComplete) onComplete(formData);
-      }, 1000);
-      return;
+    } else {
+      setIsAnalyzing(true);
     }
-
-    setIsAnalyzing(true);
     
     try {
       const payload = {
@@ -211,6 +218,17 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
         interestRoles: formData.roles,
         profileCompletion: completionPercentage
       };
+
+      console.log('[Onboarding] Saving profile with payload:', {
+        userId: formData._id || 'new-user',
+        fullName: formData.fullName,
+        email: formData.email,
+        roles: formData.roles,
+        interestRoles: payload.interestRoles,
+        skills: formData.skills.length,
+        languages: formData.languages.length,
+        resumeUrl: formData.resumeUrl ? 'present' : 'missing'
+      });
 
       const response = await fetch('http://localhost:5000/api/profile/save', {
         method: 'POST',
@@ -221,23 +239,39 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
         credentials: 'include'
       });
       
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Failed to save user profile');
+        console.error('[Onboarding] Save failed:', responseData);
+        throw new Error(responseData.message || 'Failed to save user profile');
       }
 
-      // Save locally as well for other components
-      localStorage.setItem('userProfile', JSON.stringify(formData));
+      console.log('[Onboarding] ✓ Profile saved successfully:', responseData);
 
-      // Simulate a little delay for the "AI Analyzing" effect
+      const savedUser = responseData?.user ? responseData.user : payload;
+
+      // Save locally as well for other components
+      localStorage.setItem('userProfile', JSON.stringify(savedUser));
+
+      if (isEditMode) {
+        setTimeout(() => {
+          setIsSaved(false);
+          if (onComplete) onComplete(savedUser);
+        }, 800);
+        return;
+      }
+
+      // Skip AI report and continue directly after save
       setTimeout(() => {
         setIsAnalyzing(false);
-        setShowReport(true);
-      }, 2000);
+        if (onComplete) onComplete(savedUser);
+      }, 800);
 
     } catch (err) {
       console.error('Error saving profile:', err);
       setIsAnalyzing(false);
-      setErrorMsg("Failed to save profile to the server. Please try again.");
+      setIsSaved(false);
+      setErrorMsg("Failed to save profile: " + err.message);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -256,17 +290,6 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
         }}
       />
     );
-  }
-
-  if (showReport) {
-    return <AIAnalysisReport 
-             formData={formData} 
-             onStartTest={() => {
-               setShowReport(false);
-               setShowTestFlow(true);
-             }}
-             onImprove={() => setShowReport(false)} 
-           />;
   }
 
   return (
@@ -300,7 +323,7 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
           onClick={() => onComplete && onComplete(formData)}
           className="text-gray-500 font-medium hover:text-gray-800 text-sm transition-colors"
         >
-          Skip for now
+          Back
         </button>
       </header>
 
@@ -433,74 +456,34 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                  <div>
-                    <label className="text-sm font-bold text-gray-800 mb-2.5 flex items-center gap-2">
-                      LinkedIn URL
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="url"
-                      name="linkedinUrl"
-                      value={formData.linkedinUrl}
-                      onChange={handleChange}
-                      placeholder="https://linkedin.com/in/johndoe"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <TextInput label="LeetCode URL" name="leetcodeUrl" value={formData.leetcodeUrl} onChange={handleChange} placeholder="https://leetcode.com/johndoe" />
-                  
-                  {/* Resume Upload */}
-                  <div>
-                    <label className="text-sm font-bold text-gray-800 mb-2.5 flex items-center gap-2">
-                      📄 Upload Resume (PDF/DOC/DOCX)
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        onChange={handleResumeUpload}
-                        disabled={isUploadingResume}
-                        className="hidden"
-                        id="resumeInput"
-                      />
-                      <label 
-                        htmlFor="resumeInput"
-                        className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
-                          isUploadingResume 
-                            ? 'bg-blue-50 border-blue-300' 
-                            : formData.resumeUrl
-                            ? 'bg-green-50 border-green-300'
-                            : 'bg-gray-50 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-                        } ${isUploadingResume ? 'opacity-60 cursor-not-allowed' : ''}`}
-                      >
-                        <RiUpload2Line size={20} className={isUploadingResume ? 'text-blue-500 animate-bounce' : formData.resumeUrl ? 'text-green-600' : 'text-gray-500'} />
-                        <div className="text-center">
-                          {isUploadingResume ? (
-                            <p className="text-sm font-semibold text-blue-600">Uploading...</p>
-                          ) : formData.resumeUrl ? (
-                            <div>
-                              <p className="text-sm font-semibold text-green-700">✓ {resumeFileName}</p>
-                              <p className="text-xs text-green-600">Click to replace</p>
-                            </div>
-                          ) : (
-                            <div>
-                              <p className="text-sm font-semibold text-gray-700">📤 Click to upload</p>
-                              <p className="text-xs text-gray-500">PDF, DOC or DOCX (Max 2MB) - Required</p>
-                            </div>
-                          )}
-                        </div>
-                      </label>
-                      {resumeError && (
-                        <p className="text-xs text-red-600 font-medium mt-2 flex items-center gap-1">
-                          <RiErrorWarningFill size={14} /> {resumeError}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                {/* LeetCode Integration with Analysis */}
+                <div className="mb-6">
+                  <LeetCodeIntegration
+                    leetCodeUrl={formData.leetcodeUrl}
+                    onLeetCodeUrlChange={(url) => handleChange({ target: { name: 'leetcodeUrl', value: url } })}
+                  />
                 </div>
+
+                {/* LinkedIn Integration */}
+                <div className="mb-6">
+                  <LinkedInIntegration
+                    linkedInUrl={formData.linkedinUrl}
+                    onLinkedInUrlChange={(url) => handleChange({ target: { name: 'linkedinUrl', value: url } })}
+                  />
+                </div>
+
+                {/* Resume Integration */}
+                <div className="mb-6">
+                  <ResumeIntegration
+                    resumeUrl={formData.resumeUrl}
+                    resumeFileName={resumeFileName}
+                    isUploadingResume={isUploadingResume}
+                    resumeError={resumeError}
+                    onResumeUpload={handleResumeUpload}
+                    selectedRole={(formData.roles && formData.roles[0]) ? formData.roles[0].toLowerCase() : 'fullstack'}
+                  />
+                </div>
+
               </div>
 
               {/* Extras - Buttons mapped to fake interactions or expansions if needed */}
@@ -517,7 +500,7 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
 
                 <button
                   type="submit"
-                  disabled={isSaved}
+                  disabled={isSaved || isUploadingResume || isAnalyzing}
                   className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all ${isSaved
                       ? "bg-green-500 hover:bg-green-600 shadow-green-500/30 scale-105"
                       : "bg-blue-600 hover:bg-blue-700 hover:-translate-y-0.5 shadow-blue-600/30"
@@ -530,7 +513,7 @@ export const OnboardingFlow = ({ onComplete, isEditMode }) => {
                     </>
                   ) : (
                     <>
-                      {isEditMode ? "Save Profile" : "Save & Continue"}
+                      {isUploadingResume ? "Uploading Resume..." : (isEditMode ? "Save Profile" : "Save & Continue")}
                       {!isEditMode && <RiArrowRightLine size={18} />}
                     </>
                   )}

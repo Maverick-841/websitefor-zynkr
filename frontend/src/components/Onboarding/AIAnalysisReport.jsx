@@ -219,6 +219,15 @@ export const AIAnalysisReport = ({ formData, onImprove, onStartTest }) => {
           >
             Improve My Profile
           </button>
+
+          {onStartTest && (
+            <button 
+              onClick={onStartTest}
+              className="px-8 py-5 bg-blue-600 text-white text-lg font-bold rounded-2xl shadow-sm hover:bg-blue-700 flex items-center justify-center w-full sm:w-auto transition-colors"
+            >
+              Continue to Next Step
+            </button>
+          )}
         </div>
 
       </div>

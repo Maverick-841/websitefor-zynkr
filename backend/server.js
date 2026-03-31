@@ -8,6 +8,8 @@ import { fileURLToPath } from 'url';
 import profileRoutes from './routes/profileRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import githubRoutes from './routes/githubRoutes.js';
+import leetcodeRoutes from './routes/leetcodeRoutes.js';
+import resumeRoutes from './routes/resumeRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +47,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use('/api/profile', profileRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/github', githubRoutes);
+app.use('/api/leetcode', leetcodeRoutes);
+app.use('/api/resume', resumeRoutes);
 
 // Base route
 app.get('/', (req, res) => {

@@ -3,22 +3,33 @@ import { useNavigate } from 'react-router-dom';
 import { RiLockPasswordFill, RiMailLine } from '@remixicon/react';
 
 export const AdminLogin = () => {
+  const defaultAdminEmail = 'admin@zynkr.com';
+  const defaultAdminPassword = 'adminpassword';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const fillDefaultCredentials = () => {
+    setEmail(defaultAdminEmail);
+    setPassword(defaultAdminPassword);
+    setError('');
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
     try {
       const res = await fetch('http://localhost:5000/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: normalizedEmail, password: normalizedPassword })
       });
 
       const data = await res.json();
@@ -85,6 +96,19 @@ export const AdminLogin = () => {
           >
             {loading ? 'Authenticating...' : 'Secure Login'}
           </button>
+
+          <button
+            type="button"
+            onClick={fillDefaultCredentials}
+            className="w-full border border-slate-700 hover:border-slate-500 text-slate-300 rounded-xl py-3 font-semibold transition-colors"
+          >
+            Use Default Admin Credentials
+          </button>
+
+          <div className="text-xs text-slate-400 bg-slate-950/70 border border-slate-800 rounded-xl p-3 leading-5">
+            <p>Admin Email: {defaultAdminEmail}</p>
+            <p>Admin Password: {defaultAdminPassword}</p>
+          </div>
         </form>
       </div>
     </div>

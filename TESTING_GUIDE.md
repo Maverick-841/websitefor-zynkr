@@ -2,6 +2,8 @@
 
 ## ✅ Verification Status
 
+Last reviewed: 2026-04-01 (save/edit profile flow and admin visibility confirmed in latest build).
+
 All components are correctly configured:
 
 | Component | Status | Notes |

@@ -6,6 +6,8 @@ This repository contains the Skillpath E-Learning website with a **fully fixed a
 
 **Status:** ✅ **PRODUCTION READY**
 
+**Maintenance Note (2026-04-01):** Documentation reviewed and synced with latest profile/admin save flow behavior.
+
 ---
 
 ## 🚀 Quick Start (5 Minutes)
